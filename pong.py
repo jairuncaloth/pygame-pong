@@ -1,11 +1,14 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 # python2.7, pygame 1.9.1
 # pong clone using pygame
 # Daniel Browne (jairuncaloth@gmail.com)
-
+import random
+import math
 import pygame 
 from pygame.locals import *
 
+def dist(p,q):
+    return math.sqrt((p[0]-q[0])**2+(p[1]-q[1])**2)
 
 class Pong:
   # Handles creating and managing the game area and game objects
@@ -15,38 +18,53 @@ class Pong:
     pygame.init()
     self.size = self.width, self.height = 800, 600 
     self.display_surface = pygame.display.set_mode(self.size, pygame.HWSURFACE | pygame.DOUBLEBUF)
+    self.player1_score = 0
+    self.player2_score = 0
    
   def on_event(self, event):
+    key_dict = {K_UP: [self.right_paddle.move_up, self.right_paddle.move_stop], K_DOWN: [self.right_paddle.move_down, self.right_paddle.move_stop],
+                K_w: [self.left_paddle.move_up, self.left_paddle.move_stop], K_s: [self.left_paddle.move_down, self.left_paddle.move_stop]}
+
     if event.type == pygame.QUIT:
       self.running = False
-
-    # up and down controls right paddle
-    elif event.type == KEYDOWN and event.key == K_UP:
-      self.right_paddle.move_up()
-    elif event.type == KEYDOWN and event.key == K_DOWN:
-      self.right_paddle.move_down()
-    elif event.type == KEYUP and (event.key == K_UP or event.key == K_DOWN):
-      self.right_paddle.move_stop()
-
-    # 's' and 'w' controls left paddle
-    elif event.type == KEYDOWN and event.key == K_w:
-      self.left_paddle.move_up()
-    elif event.type == KEYDOWN and event.key == K_s:
-      self.left_paddle.move_down()
-    elif event.type == KEYUP and (event.key == K_w or event.key == K_s):
-      self.left_paddle.move_stop()
+    elif event.type == KEYDOWN and event.key in key_dict:
+      key_dict[event.key][0]()
+    elif event.type == KEYUP and event.key in key_dict:
+      key_dict[event.key][1]()
+  
+  def collisions(self, paddle, ball):
+    # top/bottom wall collision detection
+    if ball.pos[1] <= ball.radius or self.height - ball.pos[1] <= ball.radius:
+      ball.bounce_horiz()
+    
+    # paddle collision detection
+    if dist(ball.pos, paddle.pos) <= 0:
+      ball.bounce_horiz
+    #if paddle.pos[1] - (paddle.length / 2) <= ball.pos[1] and paddle.pos[1] + (paddle.length / 2) >= ball.pos[1]:
+    #  if ball.pos[0] - paddle.pos[0] <= ball.radius:
+    #    ball.bounce_horiz()
+    #  elif self.width - ball.pos[0] - (self.width - paddle.pos[0]) <= ball.radius:
+    #    ball.bounce_horiz()
 
   def on_loop(self):
-    self.game_ball.bounce_vert()
-    if self.game_ball.pos[0] - self.left_paddle.pos[0] <= self.game_ball.radius:
-      if (self.left_paddle.pos[1] - (self.left_paddle.length / 2) <= self.game_ball.pos[1]
-          and self.left_paddle.pos[1] + (self.left_paddle.length / 2) >= self.game_ball.pos[1]):
-        self.game_ball.bounce_horiz()
-
-    elif self.width - self.game_ball.pos[0] - (self.width - self.right_paddle.pos[0]) <= self.game_ball.radius:
-      if (self.right_paddle.pos[1] - (self.right_paddle.length / 2) <= self.game_ball.pos[1]
-          and self.right_paddle.pos[1] + (self.right_paddle.length / 2) >= self.game_ball.pos[1]):
-        self.game_ball.bounce_horiz()
+  #  self.game_ball.bounce_vert()
+  #  if self.game_ball.pos[0] - self.left_paddle.pos[0] <= self.game_ball.radius:
+  #    if (self.left_paddle.pos[1] - (self.left_paddle.length / 2) <= self.game_ball.pos[1]
+  #        and self.left_paddle.pos[1] + (self.left_paddle.length / 2) >= self.game_ball.pos[1]):
+  #      self.game_ball.bounce_horiz()
+  #  elif self.width - self.game_ball.pos[0] - (self.width - self.right_paddle.pos[0]) <= self.game_ball.radius:
+  #    if (self.right_paddle.pos[1] - (self.right_paddle.length / 2) <= self.game_ball.pos[1]
+  #        and self.right_paddle.pos[1] + (self.right_paddle.length / 2) >= self.game_ball.pos[1]):
+  #      self.game_ball.bounce_horiz()
+    self.collisions(self.left_paddle, self.game_ball)
+    self.collisions(self.right_paddle, self.game_ball)
+    
+    if self.game_ball.pos[0] < 0:
+      self.player2_score += 1
+      self.on_execute()
+    elif self.game_ball.pos[0] > self.width:
+      self.player1_score += 1
+      self.on_execute()
 
   def on_render(self):
     # draw the playing area
@@ -64,9 +82,15 @@ class Pong:
   def on_cleanup(self):
     pygame.quit()
 
+  def reset(self):
+    self.game_ball = Ball()
+
+
   def on_execute(self):
     # create instances of the ball and paddles
-    self.game_ball = Ball()
+    rand_vel_list = (-3, -2, -1, 1, 2, 3)
+    rand_vel = [random.choice(rand_vel_list), random.choice(rand_vel_list)]
+    self.game_ball = Ball(rand_vel)
     self.left_paddle = Paddle([20, self.height / 2])
     self.right_paddle = Paddle([self.width - 20, self.height/ 2])
     self.clock = pygame.time.Clock()
@@ -82,10 +106,10 @@ class Pong:
 class Ball:
   # Creates a ball and moves it around the screen
 
-  def __init__(self):
+  def __init__(self, velocity = [0, 0]):
     self.radius = 20
     self.color = (255, 255, 255)
-    self.velocity = [-1, -1]
+    self.velocity = velocity
     self.pos = [400, 300]
     self.screen_width = game.display_surface.get_width()
     self.screen_height = game.display_surface.get_height()
@@ -93,18 +117,19 @@ class Ball:
   def draw(self, surface, screen_width, screen_height):
     self.screen_height = screen_height
     self.screen_width = screen_width
-    pygame.draw.circle(surface, self.color, self.pos, self.radius)
+    pygame.draw.circle(surface, self.color, (int(self.pos[0]), int(self.pos[1])), self.radius)
 
     self.pos[0] += self.velocity[0]
     self.pos[1] += self.velocity[1]
 
   def bounce_horiz(self):
     #if self.pos[0] <= self.radius or game.display_surface.get_width() - self.pos[0] <= self.radius:
-      self.velocity[0] = -self.velocity[0]
+      self.velocity[0] = -(self.velocity[0] + (self.velocity[0] * .1))
+      self.velocity[1] += self.velocity[1] * .1
 
   def bounce_vert(self):
-    if self.pos[1] <= self.radius or game.display_surface.get_height() - self.pos[1] <= self.radius:
-      self.velocity[1] = -self.velocity[1]
+    #if self.pos[1] <= self.radius or game.display_surface.get_height() - self.pos[1] <= self.radius:
+    self.velocity[1] = -self.velocity[1]
 
 
 class Paddle:
