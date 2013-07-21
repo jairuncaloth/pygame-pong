@@ -69,6 +69,12 @@ class Pong:
     self.left_paddle.draw(self.display_surface)
     self.right_paddle.draw(self.display_surface)
 
+    # display the score
+    p1_score_display = self.font.render(str(self.player1_score), True, (255, 255, 255))
+    self.display_surface.blit(p1_score_display, ((self.width / 2) - 130, 100))
+    p2_score_display = self.font.render(str(self.player2_score), True ,(255, 255, 255))
+    self.display_surface.blit(p2_score_display, ((self.width / 2) + 100, 100))
+
     pygame.display.flip()
     self.clock.tick(60)
 
@@ -86,6 +92,8 @@ class Pong:
     self.game_ball = Ball(rand_vel)
     self.left_paddle = Paddle([20, self.height / 2])
     self.right_paddle = Paddle([self.width - 20, self.height/ 2])
+    
+    self.font = pygame.font.SysFont('Arial', 42, True)
     self.clock = pygame.time.Clock()
 
     while self.running:
@@ -119,7 +127,6 @@ class Ball:
    #if self.pos[0] <= self.radius or game.display_surface.get_width() - self.pos[0] <= self.radius:
     self.velocity[0] = -(self.velocity[0] + (self.velocity[0] * .1))
     self.velocity[1] += self.velocity[1] * .1
-    self.color = (255, 255, 0)
 
   def bounce_vert(self):
    #if self.pos[1] <= self.radius or game.display_surface.get_height() - self.pos[1] <= self.radius:
