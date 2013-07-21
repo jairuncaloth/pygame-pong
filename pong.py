@@ -37,6 +37,7 @@ class Pong:
     if ball.pos[1] <= ball.radius or self.height - ball.pos[1] <= ball.radius:
       ball.bounce_vert()
     
+    # left/right paddle collisions
     if ball.pos[0] - left_paddle.pos[0] <= ball.radius:
         if (left_paddle.pos[1] - (left_paddle.length / 2) <= ball.pos[1]
             and left_paddle.pos[1] + (left_paddle.length / 2) >= ball.pos[1]):
@@ -48,17 +49,8 @@ class Pong:
         
 
   def on_loop(self):
-  #  self.game_ball.bounce_vert()
-  #  if self.game_ball.pos[0] - self.left_paddle.pos[0] <= self.game_ball.radius:
-  #    if (self.left_paddle.pos[1] - (self.left_paddle.length / 2) <= self.game_ball.pos[1]
-  #        and self.left_paddle.pos[1] + (self.left_paddle.length / 2) >= self.game_ball.pos[1]):
-  #      self.game_ball.bounce_horiz()
-  #  elif self.width - self.game_ball.pos[0] - (self.width - self.right_paddle.pos[0]) <= self.game_ball.radius:
-  #    if (self.right_paddle.pos[1] - (self.right_paddle.length / 2) <= self.game_ball.pos[1]
-  #        and self.right_paddle.pos[1] + (self.right_paddle.length / 2) >= self.game_ball.pos[1]):
-  #      self.game_ball.bounce_horiz()
+
     self.collisions(self.left_paddle, self.right_paddle, self.game_ball)
-    #self.collisions(self.right_paddle, self.game_ball)
     
     if self.game_ball.pos[0] < 0:
       self.player2_score += 1
