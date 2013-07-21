@@ -32,22 +32,20 @@ class Pong:
     elif event.type == KEYUP and event.key in key_dict:
       key_dict[event.key][1]()
   
-  def collisions(self, paddles, ball):
+  def collisions(self, left_paddle, right_paddle, ball):
     # top/bottom wall collision detection
     if ball.pos[1] <= ball.radius or self.height - ball.pos[1] <= ball.radius:
       ball.bounce_vert()
     
-    for paddle in paddles:
-      if abs(ball.pos[0] - paddle.pos[0]) <= 0:
+    if ball.pos[0] - left_paddle.pos[0] <= ball.radius:
+        if (left_paddle.pos[1] - (left_paddle.length / 2) <= ball.pos[1]
+            and left_paddle.pos[1] + (left_paddle.length / 2) >= ball.pos[1]):
+           ball.bounce_horiz()
+    elif self.width - ball.pos[0] - (self.width - right_paddle.pos[0]) <= ball.radius:
+      if (right_paddle.pos[1] - (right_paddle.length / 2) <= ball.pos[1]
+          and right_paddle.pos[1] + (right_paddle.length / 2) >= ball.pos[1]):
         ball.bounce_horiz()
-      #if dist(ball.pos, paddle.pos) <= paddle.length:
-      #if dist(paddle.pos, ball.pos) <= 0:
-      #  ball.bounce_horiz
-      #if paddle.pos[1] - (paddle.length / 2) <= ball.pos[1] and paddle.pos[1] + (paddle.length / 2) >= ball.pos[1]:
-      #  if ball.pos[0] - paddle.pos[0] <= ball.radius:
-      #    ball.bounce_horiz()
-      #  elif self.width - ball.pos[0] - (self.width - paddle.pos[0]) <= ball.radius:
-      #    ball.bounce_horiz()
+        
 
   def on_loop(self):
   #  self.game_ball.bounce_vert()
@@ -59,7 +57,7 @@ class Pong:
   #    if (self.right_paddle.pos[1] - (self.right_paddle.length / 2) <= self.game_ball.pos[1]
   #        and self.right_paddle.pos[1] + (self.right_paddle.length / 2) >= self.game_ball.pos[1]):
   #      self.game_ball.bounce_horiz()
-    self.collisions([self.left_paddle, self.right_paddle], self.game_ball)
+    self.collisions(self.left_paddle, self.right_paddle, self.game_ball)
     #self.collisions(self.right_paddle, self.game_ball)
     
     if self.game_ball.pos[0] < 0:
